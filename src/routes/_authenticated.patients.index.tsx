@@ -57,7 +57,8 @@ export const Route = createFileRoute("/_authenticated/patients/")({
 });
 
 function PatientsPage() {
-  const { q, new: newParam } = useSearch({ from: "/_authenticated/patients" });
+  // Corrigido para a string literal exata exigida pelo TanStack Router
+  const { q, new: newParam } = useSearch({ from: "/_authenticated/patients/" });
   const navigate = useNavigate();
   const [search, setSearch] = useState(q ?? "");
   const [openCreate, setOpenCreate] = useState(newParam === "1");

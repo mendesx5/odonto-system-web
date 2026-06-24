@@ -22,7 +22,7 @@ import {
   CalendarDays, Lock,
 } from "lucide-react";
 import { useState } from "react";
-import { PatientFormDialog } from "./_authenticated.patients";
+import { PatientFormDialog } from "./_authenticated.patients.index";
 import { EmptyState } from "./_authenticated.dashboard";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
