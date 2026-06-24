@@ -47,7 +47,7 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Odontogram } from "@/components/odontogram";
 
-export const Route = createFileRoute("/_authenticated/patients")({
+export const Route = createFileRoute("/_authenticated/patients/")({
   ssr: false,
   validateSearch: (s): { q?: string; new?: string } => ({
     q: typeof s.q === "string" ? s.q : undefined,
