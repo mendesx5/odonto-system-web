@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWaitingRoomRouteImport } from './routes/_authenticated.waiting-room'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
+import { Route as AuthenticatedRecurrenceRouteImport } from './routes/_authenticated.recurrence'
 import { Route as AuthenticatedRecordsRouteImport } from './routes/_authenticated.records'
 import { Route as AuthenticatedProceduresRouteImport } from './routes/_authenticated.procedures'
 import { Route as AuthenticatedFinancialRouteImport } from './routes/_authenticated.financial'
@@ -36,9 +38,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWaitingRoomRoute =
+  AuthenticatedWaitingRoomRouteImport.update({
+    id: '/waiting-room',
+    path: '/waiting-room',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRecurrenceRoute = AuthenticatedRecurrenceRouteImport.update({
+  id: '/recurrence',
+  path: '/recurrence',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedRecordsRoute = AuthenticatedRecordsRouteImport.update({
@@ -93,7 +106,9 @@ export interface FileRoutesByFullPath {
   '/financial': typeof AuthenticatedFinancialRoute
   '/procedures': typeof AuthenticatedProceduresRoute
   '/records': typeof AuthenticatedRecordsRoute
+  '/recurrence': typeof AuthenticatedRecurrenceRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/waiting-room': typeof AuthenticatedWaitingRoomRoute
   '/patients/$id': typeof AuthenticatedPatientsIdRoute
   '/patients/': typeof AuthenticatedPatientsIndexRoute
 }
@@ -106,7 +121,9 @@ export interface FileRoutesByTo {
   '/financial': typeof AuthenticatedFinancialRoute
   '/procedures': typeof AuthenticatedProceduresRoute
   '/records': typeof AuthenticatedRecordsRoute
+  '/recurrence': typeof AuthenticatedRecurrenceRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/waiting-room': typeof AuthenticatedWaitingRoomRoute
   '/patients/$id': typeof AuthenticatedPatientsIdRoute
   '/patients': typeof AuthenticatedPatientsIndexRoute
 }
@@ -121,7 +138,9 @@ export interface FileRoutesById {
   '/_authenticated/financial': typeof AuthenticatedFinancialRoute
   '/_authenticated/procedures': typeof AuthenticatedProceduresRoute
   '/_authenticated/records': typeof AuthenticatedRecordsRoute
+  '/_authenticated/recurrence': typeof AuthenticatedRecurrenceRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/waiting-room': typeof AuthenticatedWaitingRoomRoute
   '/_authenticated/patients/$id': typeof AuthenticatedPatientsIdRoute
   '/_authenticated/patients/': typeof AuthenticatedPatientsIndexRoute
 }
@@ -136,7 +155,9 @@ export interface FileRouteTypes {
     | '/financial'
     | '/procedures'
     | '/records'
+    | '/recurrence'
     | '/settings'
+    | '/waiting-room'
     | '/patients/$id'
     | '/patients/'
   fileRoutesByTo: FileRoutesByTo
@@ -149,7 +170,9 @@ export interface FileRouteTypes {
     | '/financial'
     | '/procedures'
     | '/records'
+    | '/recurrence'
     | '/settings'
+    | '/waiting-room'
     | '/patients/$id'
     | '/patients'
   id:
@@ -163,7 +186,9 @@ export interface FileRouteTypes {
     | '/_authenticated/financial'
     | '/_authenticated/procedures'
     | '/_authenticated/records'
+    | '/_authenticated/recurrence'
     | '/_authenticated/settings'
+    | '/_authenticated/waiting-room'
     | '/_authenticated/patients/$id'
     | '/_authenticated/patients/'
   fileRoutesById: FileRoutesById
@@ -197,11 +222,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/waiting-room': {
+      id: '/_authenticated/waiting-room'
+      path: '/waiting-room'
+      fullPath: '/waiting-room'
+      preLoaderRoute: typeof AuthenticatedWaitingRoomRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/recurrence': {
+      id: '/_authenticated/recurrence'
+      path: '/recurrence'
+      fullPath: '/recurrence'
+      preLoaderRoute: typeof AuthenticatedRecurrenceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/records': {
@@ -270,7 +309,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFinancialRoute: typeof AuthenticatedFinancialRoute
   AuthenticatedProceduresRoute: typeof AuthenticatedProceduresRoute
   AuthenticatedRecordsRoute: typeof AuthenticatedRecordsRoute
+  AuthenticatedRecurrenceRoute: typeof AuthenticatedRecurrenceRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedWaitingRoomRoute: typeof AuthenticatedWaitingRoomRoute
   AuthenticatedPatientsIdRoute: typeof AuthenticatedPatientsIdRoute
   AuthenticatedPatientsIndexRoute: typeof AuthenticatedPatientsIndexRoute
 }
@@ -282,7 +323,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFinancialRoute: AuthenticatedFinancialRoute,
   AuthenticatedProceduresRoute: AuthenticatedProceduresRoute,
   AuthenticatedRecordsRoute: AuthenticatedRecordsRoute,
+  AuthenticatedRecurrenceRoute: AuthenticatedRecurrenceRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedWaitingRoomRoute: AuthenticatedWaitingRoomRoute,
   AuthenticatedPatientsIdRoute: AuthenticatedPatientsIdRoute,
   AuthenticatedPatientsIndexRoute: AuthenticatedPatientsIndexRoute,
 }

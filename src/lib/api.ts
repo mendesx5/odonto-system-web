@@ -101,7 +101,14 @@ export interface PatientRequest {
   phone?: string; email?: string; address?: string; notes?: string;
 }
 
-export type AppointmentStatus = "AGENDADO"|"CONFIRMADO"|"CONCLUIDO"|"CANCELADO"|"NAO_COMPARECEU";
+export type AppointmentStatus =
+  | "AGENDADO"
+  | "CONFIRMADO"
+  | "AGUARDANDO"
+  | "EM_ATENDIMENTO"
+  | "CONCLUIDO"
+  | "CANCELADO"
+  | "NAO_COMPARECEU";
 
 export interface Appointment {
   id: string; patientId: string; patientName: string;
@@ -206,6 +213,7 @@ export const Appointments = {
   update: (id: string, data: AppointmentRequest) => api<Appointment>(`/appointments/${id}`, { method: "PUT", body: data }),
   setStatus: (id: string, status: AppointmentStatus) =>
     api<Appointment>(`/appointments/${id}/status`, { method: "PATCH", body: { status } }),
+  waitingRoom: () => api<WaitingRoomEntry[]>("/appointments/waiting-room"),
 };
 
 export const Records = {
@@ -233,6 +241,37 @@ export const Exams = {
     return api<ExamFile>(`/patients/${patientId}/exams`, { method: "POST", formData: fd });
   },
   remove: (id: string) => api<void>(`/exams/${id}`, { method: "DELETE" }),
+};
+
+/** Sala de espera — retornado por GET /appointments/waiting-room */
+export interface WaitingRoomEntry {
+  appointmentId: string;
+  patientName: string;
+  dentistName: string;
+  status: AppointmentStatus;
+  startTime: string;
+  waitingTimeMinutes: number;
+}
+
+/** Recorrência — retornado por GET /recurrence/list */
+export interface RecurrenceEntry {
+  patientId: string;
+  fullName: string;
+  phone: string;
+  messageTemplate: string;
+}
+
+export const WaitingRoom = {
+  list: () => api<WaitingRoomEntry[]>("/appointments/waiting-room"),
+};
+
+export const Recurrence = {
+  list: () => api<RecurrenceEntry[]>("/recurrence/list"),
+  trigger: (phone: string, message: string) =>
+    api<void>(`/recurrence/trigger?phone=${encodeURIComponent(phone)}`, {
+      method: "POST",
+      body: message,
+    }),
 };
 
 export const Odontograms = {
@@ -271,8 +310,13 @@ export function parseBackendDateTime(value: string | number[]): Date {
 }
 
 export const STATUS_LABEL: Record<AppointmentStatus, string> = {
-  AGENDADO: "Agendado", CONFIRMADO: "Confirmado", CONCLUIDO: "Concluído",
-  CANCELADO: "Cancelado", NAO_COMPARECEU: "Não compareceu",
+  AGENDADO: "Agendado",
+  CONFIRMADO: "Confirmado",
+  AGUARDANDO: "Aguardando",
+  EM_ATENDIMENTO: "Em atendimento",
+  CONCLUIDO: "Concluído",
+  CANCELADO: "Cancelado",
+  NAO_COMPARECEU: "Não compareceu",
 };
 export const ROLE_LABEL: Record<UserRole, string> = {
   ADMIN: "Administrador", DENTIST: "Dentista", RECEPTIONIST: "Recepcionista",

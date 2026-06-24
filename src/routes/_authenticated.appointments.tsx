@@ -52,20 +52,19 @@ export function isTerminal(status: AppointmentStatus): boolean {
 export function appointmentRowClasses(status: AppointmentStatus): string {
   switch (status) {
     case "CONCLUIDO":
-      // verde
       return "border-l-4 border-l-green-500 bg-green-50 dark:bg-green-900/10";
     case "CONFIRMADO":
-      // azul
       return "border-l-4 border-l-blue-500 bg-blue-50 dark:bg-blue-900/10";
+    case "AGUARDANDO":
+      return "border-l-4 border-l-violet-500 bg-violet-50 dark:bg-violet-900/10";
+    case "EM_ATENDIMENTO":
+      return "border-l-4 border-l-cyan-500 bg-cyan-50 dark:bg-cyan-900/10";
     case "CANCELADO":
-      // vermelho
       return "border-l-4 border-l-red-500 bg-red-50 dark:bg-red-900/10";
     case "NAO_COMPARECEU":
-      // laranja
       return "border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-900/10";
     case "AGENDADO":
     default:
-      // amarelo
       return "border-l-4 border-l-yellow-400 bg-yellow-50 dark:bg-yellow-900/10";
   }
 }
@@ -74,6 +73,8 @@ export function appointmentRowClasses(status: AppointmentStatus): string {
 export const STATUS_PILL: Record<AppointmentStatus, string> = {
   CONCLUIDO:      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
   CONFIRMADO:     "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  AGUARDANDO:     "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300",
+  EM_ATENDIMENTO: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
   CANCELADO:      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
   NAO_COMPARECEU: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
   AGENDADO:       "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",

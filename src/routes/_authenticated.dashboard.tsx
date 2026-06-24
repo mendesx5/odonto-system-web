@@ -155,10 +155,12 @@ function KpiCard({ label, value, icon: Icon, loading }: { label: string; value?:
 
 export function StatusBadge({ status }: { status: AppointmentStatus }) {
   const map: Record<AppointmentStatus, string> = {
-    AGENDADO: "bg-secondary text-secondary-foreground",
-    CONFIRMADO: "bg-accent/30 text-accent-foreground",
-    CONCLUIDO: "bg-success/20 text-success-foreground",
-    CANCELADO: "bg-muted text-muted-foreground line-through",
+    AGENDADO:       "bg-secondary text-secondary-foreground",
+    CONFIRMADO:     "bg-accent/30 text-accent-foreground",
+    AGUARDANDO:     "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300",
+    EM_ATENDIMENTO: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+    CONCLUIDO:      "bg-success/20 text-success-foreground",
+    CANCELADO:      "bg-muted text-muted-foreground line-through",
     NAO_COMPARECEU: "bg-destructive/15 text-destructive",
   };
   return <Badge variant="secondary" className={`${map[status]} font-medium`}>{STATUS_LABEL[status]}</Badge>;

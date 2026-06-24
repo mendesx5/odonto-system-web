@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard, Users, CalendarDays, ClipboardList, Wrench, Wallet,
-  Settings, LogOut, Stethoscope, ChevronsUpDown, ShieldCheck,
+  Settings, LogOut, Stethoscope, ChevronsUpDown, ShieldCheck, Clock, MessageCircle,
 } from "lucide-react";
 import { ROLE_LABEL, ROLE_COLOR } from "@/lib/api";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -55,6 +55,8 @@ const navItems = [
   { to: "/dashboard",    icon: LayoutDashboard, label: "Dashboard" },
   { to: "/patients",     icon: Users,            label: "Pacientes" },
   { to: "/appointments", icon: CalendarDays,     label: "Agenda" },
+  { to: "/waiting-room", icon: Clock,            label: "Sala de Espera" },
+  { to: "/recurrence",   icon: MessageCircle,    label: "Retornos" },
   { to: "/records",      icon: ClipboardList,    label: "Prontuários" },
   { to: "/procedures",   icon: Wrench,           label: "Procedimentos" },
 ] as const;
@@ -231,9 +233,11 @@ function TopBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const allNav = [
     ...navItems,
-    { to: "/financial", label: "Financeiro",   icon: Wallet },
-    { to: "/settings",  label: "Configurações", icon: Settings },
-    { to: "/admin",     label: "Administração", icon: ShieldCheck },
+    { to: "/financial",   label: "Financeiro",    icon: Wallet },
+    { to: "/settings",    label: "Configurações",  icon: Settings },
+    { to: "/admin",       label: "Administração",  icon: ShieldCheck },
+    { to: "/waiting-room",label: "Sala de Espera", icon: Clock },
+    { to: "/recurrence",  label: "Retornos",       icon: MessageCircle },
   ];
   const current = allNav.find(
     (n) => pathname === n.to || pathname.startsWith(n.to + "/"),
