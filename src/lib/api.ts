@@ -124,8 +124,13 @@ export interface ClinicalRecord {
   evolutionNotes?: string; active: boolean; procedures: Procedure[]; createdAt: string;
 }
 export interface ClinicalRecordRequest {
-  patientId: string; recordDate: string; chiefComplaint: string;
-  diagnosis?: string; treatmentPlan?: string; evolutionNotes?: string;
+  patientId: string;
+  recordDate: string;
+  chiefComplaint: string;
+  diagnosis?: string;
+  treatmentPlan?: string;
+  evolutionNotes?: string;
+  procedureIds?: string[];
 }
 export interface ExamFile {
   id: string; patientId: string; fileName: string; url?: string;
