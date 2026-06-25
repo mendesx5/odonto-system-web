@@ -52,89 +52,90 @@
 
 :root {
   --radius: 0.75rem;
-  /* Base */
-  --background: oklch(0.995 0.003 240);
-  --foreground: oklch(0.22 0.03 230);
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.03 230);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.03 230);
+  /* ── Paleta Codental-inspired: azul-petróleo profundo + teal vibrante ── */
+  --background: #f5f7fa;
+  --foreground: #1a2332;
 
-  /* Petroleum blue */
-  --primary: oklch(0.38 0.06 215);
-  --primary-foreground: oklch(0.99 0.005 240);
+  --card: #ffffff;
+  --card-foreground: #1a2332;
+  --popover: #ffffff;
+  --popover-foreground: #1a2332;
 
-  /* Mint/teal accent */
-  --accent: oklch(0.72 0.13 175);
-  --accent-foreground: oklch(0.18 0.04 220);
+  /* Azul-petróleo escuro — cor primária */
+  --primary: #1a3a4a;
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.965 0.01 230);
-  --secondary-foreground: oklch(0.28 0.04 225);
+  /* Teal/verde-água — destaque */
+  --accent: #00b8a9;
+  --accent-foreground: #ffffff;
 
-  --muted: oklch(0.965 0.01 230);
-  --muted-foreground: oklch(0.5 0.02 235);
+  --secondary: #eef2f7;
+  --secondary-foreground: #2d4a5e;
 
-  --destructive: oklch(0.6 0.21 27);
-  --destructive-foreground: oklch(0.99 0 0);
+  --muted: #eef2f7;
+  --muted-foreground: #6b7f96;
 
-  --success: oklch(0.7 0.15 160);
-  --success-foreground: oklch(0.15 0.03 160);
-  --warning: oklch(0.78 0.16 75);
-  --warning-foreground: oklch(0.2 0.04 75);
+  --destructive: #e53935;
+  --destructive-foreground: #ffffff;
 
-  --border: oklch(0.92 0.008 235);
-  --input: oklch(0.94 0.008 235);
-  --ring: oklch(0.55 0.07 210);
+  --success: #00c48c;
+  --success-foreground: #ffffff;
+  --warning: #ffb300;
+  --warning-foreground: #1a2332;
 
-  --chart-1: oklch(0.38 0.06 215);
-  --chart-2: oklch(0.72 0.13 175);
-  --chart-3: oklch(0.65 0.13 230);
-  --chart-4: oklch(0.78 0.16 75);
-  --chart-5: oklch(0.6 0.18 320);
+  --border: #dde3ec;
+  --input: #eef2f7;
+  --ring: #00b8a9;
 
-  --sidebar: oklch(0.985 0.005 235);
-  --sidebar-foreground: oklch(0.3 0.03 225);
-  --sidebar-primary: oklch(0.38 0.06 215);
-  --sidebar-primary-foreground: oklch(0.99 0.005 240);
-  --sidebar-accent: oklch(0.95 0.015 220);
-  --sidebar-accent-foreground: oklch(0.28 0.05 215);
-  --sidebar-border: oklch(0.92 0.008 235);
-  --sidebar-ring: oklch(0.55 0.07 210);
+  --chart-1: #1a3a4a;
+  --chart-2: #00b8a9;
+  --chart-3: #2979ff;
+  --chart-4: #ffb300;
+  --chart-5: #e53935;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #2d4a5e;
+  --sidebar-primary: #1a3a4a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef8f7;
+  --sidebar-accent-foreground: #00b8a9;
+  --sidebar-border: #dde3ec;
+  --sidebar-ring: #00b8a9;
 }
 
 .dark {
-  --background: oklch(0.16 0.025 230);
-  --foreground: oklch(0.97 0.005 240);
-  --card: oklch(0.22 0.03 228);
-  --card-foreground: oklch(0.97 0.005 240);
-  --popover: oklch(0.22 0.03 228);
-  --popover-foreground: oklch(0.97 0.005 240);
-  --primary: oklch(0.72 0.13 175);
-  --primary-foreground: oklch(0.18 0.04 220);
-  --secondary: oklch(0.28 0.03 228);
-  --secondary-foreground: oklch(0.97 0 0);
-  --accent: oklch(0.72 0.13 175);
-  --accent-foreground: oklch(0.18 0.04 220);
-  --muted: oklch(0.28 0.03 228);
-  --muted-foreground: oklch(0.7 0.02 230);
-  --destructive: oklch(0.65 0.2 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.7 0.15 160);
-  --success-foreground: oklch(0.15 0.03 160);
-  --warning: oklch(0.78 0.16 75);
-  --warning-foreground: oklch(0.2 0.04 75);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.55 0.09 200);
-  --sidebar: oklch(0.2 0.03 228);
-  --sidebar-foreground: oklch(0.95 0.005 240);
-  --sidebar-primary: oklch(0.72 0.13 175);
-  --sidebar-primary-foreground: oklch(0.18 0.04 220);
-  --sidebar-accent: oklch(0.28 0.03 228);
-  --sidebar-accent-foreground: oklch(0.97 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.55 0.09 200);
+  --background: #0f1923;
+  --foreground: #e8eef5;
+  --card: #17232f;
+  --card-foreground: #e8eef5;
+  --popover: #17232f;
+  --popover-foreground: #e8eef5;
+  --primary: #00b8a9;
+  --primary-foreground: #0f1923;
+  --secondary: #1e2e3d;
+  --secondary-foreground: #c5d3e0;
+  --accent: #00b8a9;
+  --accent-foreground: #0f1923;
+  --muted: #1e2e3d;
+  --muted-foreground: #7a9ab0;
+  --destructive: #e53935;
+  --destructive-foreground: #ffffff;
+  --success: #00c48c;
+  --success-foreground: #0f1923;
+  --warning: #ffb300;
+  --warning-foreground: #0f1923;
+  --border: rgba(255,255,255,0.08);
+  --input: rgba(255,255,255,0.1);
+  --ring: #00b8a9;
+  --sidebar: #13202d;
+  --sidebar-foreground: #c5d3e0;
+  --sidebar-primary: #00b8a9;
+  --sidebar-primary-foreground: #0f1923;
+  --sidebar-accent: #1a2e3d;
+  --sidebar-accent-foreground: #00b8a9;
+  --sidebar-border: rgba(255,255,255,0.08);
+  --sidebar-ring: #00b8a9;
 }
 
 @layer base {
@@ -148,54 +149,98 @@
   h1, h2, h3, h4 { letter-spacing: 0; }
 }
 
+/* ── Animações de página ── */
 @layer utilities {
-  @keyframes odonto-page-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* Auth: bolhas flutuantes de fundo */
+  @keyframes blob-drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%       { transform: translate(30px, -20px) scale(1.05); }
+    66%       { transform: translate(-20px, 15px) scale(0.95); }
+  }
+  @keyframes blob-drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    40%       { transform: translate(-25px, 20px) scale(1.08); }
+    70%       { transform: translate(20px, -15px) scale(0.92); }
+  }
+  @keyframes blob-drift-3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%       { transform: translate(15px, 25px) scale(1.1); }
   }
 
+  /* Partícula flutuante pequena */
+  @keyframes particle-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+    50%       { transform: translateY(-18px) rotate(180deg); opacity: 1; }
+  }
+
+  /* Entrada de página */
+  @keyframes odonto-page-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
   @keyframes odonto-fade-in {
     from { opacity: 0; }
-    to { opacity: 1; }
+    to   { opacity: 1; }
   }
-
   @keyframes odonto-tab-in {
     from { opacity: 0; transform: translateY(6px) scale(0.995); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  .auth-page {
-    animation: odonto-page-in 260ms ease-out both;
+  /* Transição de login → dashboard por role */
+  @keyframes login-success-admin {
+    0%   { opacity: 1; transform: scale(1); }
+    40%  { opacity: 0; transform: scale(1.04) translateY(-8px); }
+    100% { opacity: 0; transform: scale(1.08) translateY(-16px); }
+  }
+  @keyframes login-success-dentist {
+    0%   { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(-40px) scale(0.97); }
+  }
+  @keyframes login-success-receptionist {
+    0%   { opacity: 1; transform: scale(1) rotate(0deg); }
+    50%  { transform: scale(1.02) rotate(0.5deg); }
+    100% { opacity: 0; transform: scale(0.96) rotate(-0.5deg); }
   }
 
-  .auth-transitioning .auth-page {
-    opacity: 0;
-    transform: translateY(-6px);
-    transition: opacity 180ms ease, transform 180ms ease;
-  }
-
-  .app-shell {
-    animation: odonto-fade-in 220ms ease-out both;
-  }
-
-  .route-surface > * {
-    animation: odonto-page-in 220ms ease-out both;
-  }
+  .auth-page            { animation: odonto-page-in 280ms ease-out both; }
+  .app-shell            { animation: odonto-fade-in 240ms ease-out both; }
+  .route-surface > *    { animation: odonto-page-in 220ms ease-out both; }
 
   [role="tabpanel"][data-state="active"] {
     animation: odonto-tab-in 180ms ease-out both;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .auth-page,
-    .app-shell,
-    .route-surface > *,
-    [role="tabpanel"][data-state="active"] {
-      animation: none;
-    }
+  /* Saída por role */
+  .auth-exit-admin        { animation: login-success-admin 350ms ease-in both; }
+  .auth-exit-dentist      { animation: login-success-dentist 300ms ease-in both; }
+  .auth-exit-receptionist { animation: login-success-receptionist 380ms ease-in-out both; }
 
-    .auth-transitioning .auth-page {
-      transition: none;
-    }
+  .auth-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+  }
+  .auth-blob-1 { animation: blob-drift    8s ease-in-out infinite; }
+  .auth-blob-2 { animation: blob-drift-2 10s ease-in-out infinite; }
+  .auth-blob-3 { animation: blob-drift-3  7s ease-in-out infinite; }
+
+  .auth-particle { animation: particle-float var(--duration, 3s) ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-page, .app-shell, .route-surface > *,
+    [role="tabpanel"][data-state="active"],
+    .auth-exit-admin, .auth-exit-dentist, .auth-exit-receptionist,
+    .auth-blob, .auth-particle { animation: none !important; transition: none !important; }
+  }
+
+  /* Dashboard quick action gradient cards */
+  .quick-action-card {
+    transition: transform 150ms ease, box-shadow 150ms ease;
+  }
+  .quick-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,184,169,0.15);
   }
 }
