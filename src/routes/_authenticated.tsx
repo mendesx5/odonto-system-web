@@ -3,13 +3,9 @@ import {
 } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import {
-  SidebarProvider, Sidebar, SidebarContent, SidebarGroup,
-  SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton,
-  SidebarMenuItem, SidebarTrigger, SidebarHeader, SidebarFooter, useSidebar,
-} from "@/components/ui/sidebar";
-import {
   LayoutDashboard, Users, CalendarDays, ClipboardList, Wrench, Wallet,
-  Settings, LogOut, Stethoscope, ChevronsUpDown, ShieldCheck, Clock, MessageCircle,
+  Settings, LogOut, Stethoscope, ChevronsUpDown, ShieldCheck, Clock,
+  MessageCircle, Menu, X,
 } from "lucide-react";
 import { ROLE_LABEL, ROLE_COLOR } from "@/lib/api";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -18,6 +14,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -34,22 +31,10 @@ function AuthGate() {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background app-shell">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <TopBar />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 route-surface">
-            <Outlet />
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
-  );
+  return <AppShell />;
 }
 
-// ─── Nav items (sem Financeiro — tratado separadamente por role) ─────────────
+// ─── Nav items ───────────────────────────────────────────────────────────────
 
 const navItems = [
   { to: "/dashboard",    icon: LayoutDashboard, label: "Dashboard" },
@@ -61,110 +46,202 @@ const navItems = [
   { to: "/procedures",   icon: Wrench,           label: "Procedimentos" },
 ] as const;
 
-function AppSidebar() {
+// ─── App Shell ───────────────────────────────────────────────────────────────
+
+function AppShell() {
   const { user } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // mobileOpen: drawer lateral no mobile
+  const [mobileOpen, setMobileOpen] = useState(false);
   const isActive = (to: string) => pathname === to || pathname.startsWith(to + "/");
 
+  // Fechar drawer ao navegar
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  const allNavItems = [
+    ...navItems,
+    ...(user?.role === "ADMIN" ? [
+      { to: "/financial" as const, icon: Wallet, label: "Financeiro" },
+    ] : []),
+  ];
+
+  // Bottom nav mobile — 4 atalhos + "Mais"
+  const bottomNav = [
+    { to: "/dashboard",    icon: LayoutDashboard, label: "Início" },
+    { to: "/appointments", icon: CalendarDays,     label: "Agenda" },
+    { to: "/waiting-room", icon: Clock,            label: "Espera" },
+    { to: "/patients",     icon: Users,            label: "Pacientes" },
+  ] as const;
+
+  // Conteúdo do nav — reutilizado no sidebar desktop e drawer mobile
+  function NavContent({ onLinkClick }: { onLinkClick?: () => void }) {
+    return (
+      <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+        {allNavItems.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            onClick={onLinkClick}
+            className={`
+              flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+              ${isActive(item.to)
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"}
+            `}
+          >
+            <item.icon className="size-4 shrink-0" />
+            <span>{item.label}</span>
+          </Link>
+        ))}
+
+        <div className="pt-2 mt-2 border-t space-y-0.5">
+          <Link
+            to="/settings"
+            onClick={onLinkClick}
+            className={`
+              flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+              ${isActive("/settings")
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"}
+            `}
+          >
+            <Settings className="size-4 shrink-0" />
+            <span>Configurações</span>
+          </Link>
+
+          {user?.role === "ADMIN" && (
+            <Link
+              to="/admin"
+              onClick={onLinkClick}
+              className={`
+                flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                ${isActive("/admin")
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"}
+              `}
+            >
+              <ShieldCheck className="size-4 shrink-0" />
+              <span>Administração</span>
+            </Link>
+          )}
+        </div>
+      </nav>
+    );
+  }
+
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b">
-        <div className="flex items-center gap-2.5 px-1 py-1.5">
-          <div className="size-9 rounded-lg bg-primary text-primary-foreground grid place-items-center shrink-0">
+    <div className="min-h-screen flex bg-background app-shell">
+
+      {/* ══════════════════════════════════════════════
+          DESKTOP SIDEBAR — sempre visível, largura fixa
+          ══════════════════════════════════════════════ */}
+      <aside className="hidden lg:flex flex-col w-56 xl:w-64 shrink-0 bg-card border-r h-screen sticky top-0">
+        {/* Logo */}
+        <div className="h-14 flex items-center gap-2.5 px-4 border-b shrink-0">
+          <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shrink-0">
             <Stethoscope className="size-4" />
           </div>
-          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+          <div>
             <p className="text-sm font-bold leading-none">OdontoSystem</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
-              Gestão clínica
-            </p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Gestão clínica</p>
           </div>
         </div>
-      </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Operação</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton asChild isActive={isActive(item.to)} tooltip={item.label}>
-                    <Link to={item.to}>
-                      <item.icon className="size-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+        <NavContent />
 
-              {/* ── Financeiro — apenas ADMIN ── */}
-              {user?.role === "ADMIN" && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive("/financial")}
-                    tooltip="Financeiro"
-                  >
-                    <Link to="/financial">
-                      <Wallet className="size-4" />
-                      <span>Financeiro</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* User */}
+        <div className="border-t p-2 shrink-0">
+          <UserButton />
+        </div>
+      </aside>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive("/settings")}
-                  tooltip="Configurações"
-                >
-                  <Link to="/settings">
-                    <Settings className="size-4" />
-                    <span>Configurações</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+      {/* ══════════════════════════════════════════════
+          MOBILE DRAWER — overlay + slide-in
+          ══════════════════════════════════════════════ */}
+      {/* Overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-              {user?.role === "ADMIN" && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive("/admin")}
-                    tooltip="Administração"
-                  >
-                    <Link to="/admin">
-                      <ShieldCheck className="size-4" />
-                      <span>Administração</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+      {/* Drawer */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-full z-50 flex flex-col w-72 bg-card border-r
+          transition-transform duration-300 ease-in-out lg:hidden
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        {/* Header do drawer */}
+        <div className="h-14 flex items-center gap-2.5 px-4 border-b shrink-0">
+          <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shrink-0">
+            <Stethoscope className="size-4" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold leading-none">OdontoSystem</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Gestão clínica</p>
+          </div>
+          <button
+            className="p-1.5 rounded-md hover:bg-muted transition-colors"
+            onClick={() => setMobileOpen(false)}
+          >
+            <X className="size-4" />
+          </button>
+        </div>
 
-      <SidebarFooter className="border-t">
-        <UserButton />
-      </SidebarFooter>
-    </Sidebar>
+        <NavContent onLinkClick={() => setMobileOpen(false)} />
+
+        <div className="border-t p-2 shrink-0">
+          <UserButton />
+        </div>
+      </aside>
+
+      {/* ══════════════════════════════════════════════
+          MAIN CONTENT
+          ══════════════════════════════════════════════ */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        <TopBar onMenuClick={() => setMobileOpen((v) => !v)} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-20 lg:pb-8 route-surface">
+          <Outlet />
+        </main>
+
+        {/* ── Bottom Nav (somente mobile) ── */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-card border-t flex items-stretch safe-bottom">
+          {bottomNav.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`
+                flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors py-2
+                ${isActive(item.to) ? "text-primary" : "text-muted-foreground"}
+              `}
+            >
+              <item.icon className={`size-5 transition-transform ${isActive(item.to) ? "scale-110" : ""}`} />
+              {item.label}
+            </Link>
+          ))}
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-medium text-muted-foreground py-2"
+          >
+            <Menu className="size-5" />
+            Mais
+          </button>
+        </nav>
+      </div>
+    </div>
   );
 }
+
+// ─── UserButton ───────────────────────────────────────────────────────────────
 
 function UserButton() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { state } = useSidebar();
   if (!user) return null;
+
   const initials = user.fullName
     .split(" ")
     .filter(Boolean)
@@ -176,34 +253,26 @@ function UserButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 w-full p-1.5 rounded-md hover:bg-sidebar-accent transition-colors text-left">
+        <button className="flex items-center gap-2 w-full p-2 rounded-lg hover:bg-muted transition-colors text-left">
           <Avatar className="size-8 shrink-0">
             <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
-          {state !== "collapsed" && (
-            <>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate leading-tight">{user.fullName}</p>
-                <span
-                  className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 ${ROLE_COLOR[user.role]}`}
-                >
-                  {ROLE_LABEL[user.role]}
-                </span>
-              </div>
-              <ChevronsUpDown className="size-3.5 text-muted-foreground" />
-            </>
-          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate leading-tight">{user.fullName}</p>
+            <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 ${ROLE_COLOR[user.role]}`}>
+              {ROLE_LABEL[user.role]}
+            </span>
+          </div>
+          <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="top" align="end" className="w-64">
         <div className="px-3 py-2.5 border-b">
           <p className="text-sm font-semibold">{user.fullName}</p>
           <p className="text-xs text-muted-foreground">{user.email}</p>
-          <span
-            className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded mt-1.5 ${ROLE_COLOR[user.role]}`}
-          >
+          <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded mt-1.5 ${ROLE_COLOR[user.role]}`}>
             {ROLE_LABEL[user.role]}
           </span>
         </div>
@@ -228,31 +297,40 @@ function UserButton() {
   );
 }
 
-function TopBar() {
+// ─── TopBar ───────────────────────────────────────────────────────────────────
+
+function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
   const { user } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
   const allNav = [
     ...navItems,
-    { to: "/financial",   label: "Financeiro",    icon: Wallet },
-    { to: "/settings",    label: "Configurações",  icon: Settings },
-    { to: "/admin",       label: "Administração",  icon: ShieldCheck },
-    { to: "/waiting-room",label: "Sala de Espera", icon: Clock },
-    { to: "/recurrence",  label: "Retornos",       icon: MessageCircle },
+    { to: "/financial",    label: "Financeiro",    icon: Wallet },
+    { to: "/settings",     label: "Configurações",  icon: Settings },
+    { to: "/admin",        label: "Administração",  icon: ShieldCheck },
   ];
+
   const current = allNav.find(
     (n) => pathname === n.to || pathname.startsWith(n.to + "/"),
   );
+
   return (
-    <header className="h-14 border-b bg-card/60 backdrop-blur sticky top-0 z-30 flex items-center gap-2 px-3 sm:px-4">
-      <SidebarTrigger />
-      <div className="h-5 w-px bg-border mx-1" />
+    <header className="h-14 border-b bg-card/80 backdrop-blur sticky top-0 z-30 flex items-center gap-3 px-4 shrink-0">
+      {/* Hambúrguer — só mobile */}
+      <button
+        onClick={onMenuClick}
+        className="lg:hidden p-1.5 rounded-md hover:bg-muted transition-colors"
+        aria-label="Abrir menu"
+      >
+        <Menu className="size-5" />
+      </button>
+
       <h1 className="text-sm font-semibold truncate flex-1">
         {current?.label ?? "OdontoSystem"}
       </h1>
+
       {user && (
-        <span
-          className={`hidden sm:inline-block text-[10px] font-semibold px-2 py-1 rounded ${ROLE_COLOR[user.role]}`}
-        >
+        <span className={`hidden sm:inline-block text-[10px] font-semibold px-2 py-1 rounded ${ROLE_COLOR[user.role]}`}>
           {ROLE_LABEL[user.role]}
         </span>
       )}

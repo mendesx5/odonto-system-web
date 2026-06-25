@@ -244,3 +244,34 @@
     box-shadow: 0 8px 24px rgba(0,184,169,0.15);
   }
 }
+
+/* ── Bottom nav safe area (iPhone notch) ── */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ── Sidebar icon-only hover tooltip ── */
+@layer utilities {
+  .sidebar-icon-tooltip {
+    position: relative;
+  }
+  .sidebar-icon-tooltip:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: hsl(var(--popover));
+    color: hsl(var(--popover-foreground));
+    border: 1px solid var(--color-border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    pointer-events: none;
+    z-index: 100;
+  }
+}

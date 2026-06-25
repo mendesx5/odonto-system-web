@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,23 +34,6 @@ function AuthPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [exitRole, setExitRole] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Parallax suave no mouse (apenas no aside)
-  const asideRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const aside = asideRef.current;
-    if (!aside) return;
-    const onMove = (e: MouseEvent) => {
-      const rect = aside.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 12;
-      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 8;
-      aside.style.setProperty("--mx", `${x}px`);
-      aside.style.setProperty("--my", `${y}px`);
-    };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
-  }, []);
 
   if (ready && user) return <Navigate to="/dashboard" replace />;
 
@@ -61,7 +44,6 @@ function AuthPage() {
       const u = await login(email.trim(), password);
       toast.success("Bem-vindo de volta!");
 
-      // Animação diferente por role
       const role = (u as any)?.role ?? "ADMIN";
       const exitClass =
         role === "ADMIN"         ? "auth-exit-admin" :
@@ -88,19 +70,15 @@ function AuthPage() {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={`min-h-screen grid lg:grid-cols-2 bg-background auth-page ${exitRole ?? ""}`}
-    >
+    <div className={`min-h-screen grid lg:grid-cols-2 bg-background auth-page ${exitRole ?? ""}`}>
       {/* ── Painel visual esquerdo ── */}
       <aside
-        ref={asideRef}
         className="hidden lg:flex relative overflow-hidden text-white"
         style={{
           background: "linear-gradient(135deg, #1a3a4a 0%, #0d2535 60%, #0a1e2e 100%)",
         }}
       >
-        {/* Blobs animados */}
+        {/* Blobs animados — sem parallax de mouse */}
         <div className="auth-blob auth-blob-1 w-80 h-80 -top-10 -left-10"
           style={{ background: "rgba(0,184,169,0.25)" }} />
         <div className="auth-blob auth-blob-2 w-64 h-64 bottom-10 right-0"
@@ -108,7 +86,7 @@ function AuthPage() {
         <div className="auth-blob auth-blob-3 w-48 h-48 top-1/2 left-1/3"
           style={{ background: "rgba(41,121,255,0.12)" }} />
 
-        {/* Partículas flutuantes */}
+        {/* Partículas flutuantes — animação contínua, sem mouse */}
         {PARTICLES.map((p, i) => (
           <span
             key={i}
@@ -131,11 +109,8 @@ function AuthPage() {
           }}
         />
 
-        {/* Conteúdo com parallax */}
-        <div
-          className="relative z-10 flex flex-col justify-between p-12 w-full"
-          style={{ transform: "translate(var(--mx,0), var(--my,0))", transition: "transform 0.1s ease-out" }}
-        >
+        {/* Conteúdo estático — sem transform de parallax */}
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div className="flex items-center gap-3">
             <div className="size-11 rounded-xl grid place-items-center"
               style={{ background: "rgba(0,184,169,0.25)", border: "1px solid rgba(0,184,169,0.4)" }}>

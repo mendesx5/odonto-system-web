@@ -2,9 +2,9 @@ import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Appointments, Users, Procedures, STATUS_LABEL, parseBackendDateTime,
+  Appointments, AppointmentsExt, Users, Procedures, STATUS_LABEL, parseBackendDateTime,
   type AppointmentRequest, type AppointmentStatus, type Patient,
-  type UserRecord, type Procedure,
+  type UserRecord, type Procedure, type BlockScheduleRequest,
 } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,11 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, CalendarDays, Loader2, Stethoscope, Lock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Plus, CalendarDays, Loader2, Stethoscope, Lock,
+  BanIcon, Clock3, ChevronRight,
+} from "lucide-react";
 import { format, isSameDay, addDays, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -38,38 +42,25 @@ export const Route = createFileRoute("/_authenticated/appointments")({
 
 // ─── Status helpers ─────────────────────────────────────────────────────────
 
-/** Statuses que bloqueiam qualquer edição posterior */
 const TERMINAL_STATUSES: AppointmentStatus[] = ["CONCLUIDO", "CANCELADO", "NAO_COMPARECEU"];
 
 export function isTerminal(status: AppointmentStatus): boolean {
   return TERMINAL_STATUSES.includes(status);
 }
 
-/**
- * Retorna as classes Tailwind de fundo + texto para o card inteiro,
- * conforme o status da consulta.
- */
 export function appointmentRowClasses(status: AppointmentStatus): string {
   switch (status) {
-    case "CONCLUIDO":
-      return "border-l-4 border-l-green-500 bg-green-50 dark:bg-green-900/10";
-    case "CONFIRMADO":
-      return "border-l-4 border-l-blue-500 bg-blue-50 dark:bg-blue-900/10";
-    case "AGUARDANDO":
-      return "border-l-4 border-l-violet-500 bg-violet-50 dark:bg-violet-900/10";
-    case "EM_ATENDIMENTO":
-      return "border-l-4 border-l-cyan-500 bg-cyan-50 dark:bg-cyan-900/10";
-    case "CANCELADO":
-      return "border-l-4 border-l-red-500 bg-red-50 dark:bg-red-900/10";
-    case "NAO_COMPARECEU":
-      return "border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-900/10";
+    case "CONCLUIDO":      return "border-l-4 border-l-green-500 bg-green-50 dark:bg-green-900/10";
+    case "CONFIRMADO":     return "border-l-4 border-l-blue-500 bg-blue-50 dark:bg-blue-900/10";
+    case "AGUARDANDO":     return "border-l-4 border-l-violet-500 bg-violet-50 dark:bg-violet-900/10";
+    case "EM_ATENDIMENTO": return "border-l-4 border-l-cyan-500 bg-cyan-50 dark:bg-cyan-900/10";
+    case "CANCELADO":      return "border-l-4 border-l-red-500 bg-red-50 dark:bg-red-900/10";
+    case "NAO_COMPARECEU": return "border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-900/10";
     case "AGENDADO":
-    default:
-      return "border-l-4 border-l-yellow-400 bg-yellow-50 dark:bg-yellow-900/10";
+    default:               return "border-l-4 border-l-yellow-400 bg-yellow-50 dark:bg-yellow-900/10";
   }
 }
 
-/** Pill colorido para o status (compatível com o StatusBadge do dashboard) */
 export const STATUS_PILL: Record<AppointmentStatus, string> = {
   CONCLUIDO:      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
   CONFIRMADO:     "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
@@ -86,6 +77,7 @@ function AppointmentsPage() {
   const navigate = useNavigate();
   const { new: newParam } = useSearch({ from: "/_authenticated/appointments" });
   const [open, setOpen] = useState(newParam === "1");
+  const [blockOpen, setBlockOpen] = useState(false);
   const [dayOffset, setDayOffset] = useState(0);
   const day = startOfDay(addDays(new Date(), dayOffset));
 
@@ -105,7 +97,7 @@ function AppointmentsPage() {
   );
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-5 max-w-6xl mx-auto">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 items-center">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold truncate">Agenda</h1>
@@ -113,21 +105,34 @@ function AppointmentsPage() {
             {format(day, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </p>
         </div>
-        <Dialog
-          open={open}
-          onOpenChange={(o) => {
-            setOpen(o);
-            if (!o) navigate({ to: "/appointments", search: {} });
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="size-4 mr-1.5" />
-              Agendar
-            </Button>
-          </DialogTrigger>
-          <AppointmentFormDialog onClose={() => setOpen(false)} />
-        </Dialog>
+        <div className="flex items-center gap-2">
+          {/* Bloquear horário — admin/receptionist */}
+          <Dialog open={blockOpen} onOpenChange={setBlockOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="hidden sm:flex items-center gap-1.5">
+                <BanIcon className="size-3.5" />
+                Bloquear
+              </Button>
+            </DialogTrigger>
+            <BlockScheduleDialog onClose={() => setBlockOpen(false)} defaultDate={format(day, "yyyy-MM-dd")} />
+          </Dialog>
+
+          <Dialog
+            open={open}
+            onOpenChange={(o) => {
+              setOpen(o);
+              if (!o) navigate({ to: "/appointments", search: {} });
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="size-4 mr-1.5" />
+                Agendar
+              </Button>
+            </DialogTrigger>
+            <AppointmentFormDialog onClose={() => setOpen(false)} defaultDate={format(day, "yyyy-MM-dd")} />
+          </Dialog>
+        </div>
       </header>
 
       {/* Seletor de dias */}
@@ -191,6 +196,30 @@ function AppointmentRow({ a }: { a: import("@/lib/api").Appointment }) {
   const start = parseBackendDateTime(a.startTime as any);
   const end   = parseBackendDateTime(a.endTime as any);
 
+  // Bloqueio de horário: BLOCKED é um status especial
+  const isBlock = (a as any).type === "BLOCKED" || a.reason === "__BLOCKED__";
+
+  if (isBlock) {
+    return (
+      <Card className="p-4 flex items-center gap-4 border-l-4 border-l-gray-400 bg-gray-50 dark:bg-gray-900/20 opacity-75">
+        <div className="text-center w-14 shrink-0">
+          <p className="text-base font-semibold tabular-nums">{format(start, "HH:mm")}</p>
+          <p className="text-[10px] text-muted-foreground tabular-nums">{format(end, "HH:mm")}</p>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <BanIcon className="size-3.5 text-muted-foreground shrink-0" />
+            <p className="text-sm font-medium text-muted-foreground">Horário bloqueado</p>
+          </div>
+          <p className="text-xs text-muted-foreground truncate mt-0.5">
+            {a.notes || a.reason || "—"} · Dr(a). {a.dentistName}
+          </p>
+        </div>
+        <Badge variant="secondary" className="text-[10px] shrink-0">Bloqueado</Badge>
+      </Card>
+    );
+  }
+
   return (
     <Card
       className={`p-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 transition-colors ${appointmentRowClasses(a.status)}`}
@@ -207,7 +236,6 @@ function AppointmentRow({ a }: { a: import("@/lib/api").Appointment }) {
         <p className="text-xs text-muted-foreground truncate">
           {a.reason || "—"} · Dr(a). {a.dentistName}
         </p>
-        {/* Pill de status */}
         <span
           className={`inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_PILL[a.status]}`}
         >
@@ -215,7 +243,7 @@ function AppointmentRow({ a }: { a: import("@/lib/api").Appointment }) {
         </span>
       </div>
 
-      {/* Selector de status — bloqueado se terminal */}
+      {/* Selector de status */}
       <div className="flex items-center gap-2 shrink-0">
         {terminal ? (
           <div
@@ -250,20 +278,20 @@ function AppointmentRow({ a }: { a: import("@/lib/api").Appointment }) {
 
 // ─── Formulário de agendamento ────────────────────────────────────────────────
 
-function AppointmentFormDialog({ onClose }: { onClose: () => void }) {
+function AppointmentFormDialog({ onClose, defaultDate }: { onClose: () => void; defaultDate?: string }) {
   const qc = useQueryClient();
   const { user } = useAuth();
   const isDentist = user?.role === "DENTIST";
 
   const [patient, setPatient] = useState<Patient | null>(null);
   const [dentistId, setDentistId] = useState(isDentist ? user!.id : "");
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [date, setDate] = useState(defaultDate ?? format(new Date(), "yyyy-MM-dd"));
   const [start, setStart] = useState("09:00");
   const [duration, setDuration] = useState(30);
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
-  // Procedimentos selecionados
   const [selectedProcedures, setSelectedProcedures] = useState<string[]>([]);
+  const [showFreeSlots, setShowFreeSlots] = useState(false);
 
   const { data: dentistsData, isLoading: loadingDentists } = useQuery({
     queryKey: ["dentists"],
@@ -277,6 +305,13 @@ function AppointmentFormDialog({ onClose }: { onClose: () => void }) {
     queryFn: () => Procedures.catalog(),
   });
   const procedures: Procedure[] = proceduresCatalog ?? [];
+
+  // Horários livres
+  const { data: freeSlots, isLoading: loadingSlots } = useQuery({
+    queryKey: ["free-slots", dentistId, date],
+    queryFn: () => AppointmentsExt.getFreeSlots(dentistId, date),
+    enabled: showFreeSlots && !!dentistId && !!date,
+  });
 
   const m = useMutation({
     mutationFn: (body: AppointmentRequest) => Appointments.create(body),
@@ -309,8 +344,6 @@ function AppointmentFormDialog({ onClose }: { onClose: () => void }) {
       endTime,
       reason,
       notes,
-      // procedureIds é ignorado pelo backend atual — ficará pronto quando
-      // a Fase 5 implementar a associação no Appointment.
       procedureIds: selectedProcedures,
     } as any);
   }
@@ -343,7 +376,7 @@ function AppointmentFormDialog({ onClose }: { onClose: () => void }) {
               Nenhum dentista ativo cadastrado.
             </p>
           ) : (
-            <Select value={dentistId} onValueChange={setDentistId}>
+            <Select value={dentistId} onValueChange={(v) => { setDentistId(v); setShowFreeSlots(false); }}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o dentista…" />
               </SelectTrigger>
@@ -369,7 +402,7 @@ function AppointmentFormDialog({ onClose }: { onClose: () => void }) {
               type="date"
               required
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => { setDate(e.target.value); setShowFreeSlots(false); }}
             />
           </div>
           <div className="space-y-1.5">
@@ -400,6 +433,48 @@ function AppointmentFormDialog({ onClose }: { onClose: () => void }) {
             </Select>
           </div>
         </div>
+
+        {/* Horários livres */}
+        {dentistId && date && (
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setShowFreeSlots((v) => !v)}
+              className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
+            >
+              <Clock3 className="size-3.5" />
+              {showFreeSlots ? "Ocultar" : "Ver"} horários livres neste dia
+              <ChevronRight className={`size-3.5 transition-transform ${showFreeSlots ? "rotate-90" : ""}`} />
+            </button>
+
+            {showFreeSlots && (
+              <div className="rounded-md border p-3 bg-muted/30 space-y-2">
+                {loadingSlots ? (
+                  <Skeleton className="h-8 w-full" />
+                ) : !freeSlots || freeSlots.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Nenhum horário livre encontrado.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {freeSlots.map((slot, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setStart(slot.startTime.slice(0, 5))}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                          start === slot.startTime.slice(0, 5)
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-white hover:bg-muted border-border"
+                        }`}
+                      >
+                        {slot.startTime.slice(0, 5)} – {slot.endTime.slice(0, 5)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="space-y-1.5">
           <Label>Motivo</Label>
@@ -459,6 +534,124 @@ function AppointmentFormDialog({ onClose }: { onClose: () => void }) {
           <Button type="submit" disabled={m.isPending}>
             {m.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
             Agendar
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  );
+}
+
+// ─── Bloquear horário ─────────────────────────────────────────────────────────
+
+function BlockScheduleDialog({ onClose, defaultDate }: { onClose: () => void; defaultDate?: string }) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const isDentist = user?.role === "DENTIST";
+
+  const [dentistId, setDentistId] = useState(isDentist ? user!.id : "");
+  const [date, setDate] = useState(defaultDate ?? format(new Date(), "yyyy-MM-dd"));
+  const [startTime, setStartTime] = useState("12:00");
+  const [endTime, setEndTime] = useState("13:00");
+  const [reason, setReason] = useState("");
+
+  const { data: dentistsData, isLoading: loadingDentists } = useQuery({
+    queryKey: ["dentists"],
+    queryFn: () => Users.listDentists(),
+    enabled: !isDentist,
+  });
+  const dentists = dentistsData?.content ?? [];
+
+  const m = useMutation({
+    mutationFn: (data: BlockScheduleRequest) => AppointmentsExt.blockSchedule(data),
+    onSuccess: () => {
+      toast.success("Horário bloqueado com sucesso.");
+      qc.invalidateQueries({ queryKey: ["appointments"] });
+      onClose();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Erro ao bloquear."),
+  });
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!dentistId) return toast.error("Selecione um dentista.");
+    if (!reason.trim()) return toast.error("Informe o motivo do bloqueio.");
+    m.mutate({
+      dentistId,
+      startTime: `${date}T${startTime}:00`,
+      endTime: `${date}T${endTime}:00`,
+      reason: reason.trim(),
+    });
+  }
+
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <BanIcon className="size-4 text-destructive" />
+          Bloquear horário na agenda
+        </DialogTitle>
+      </DialogHeader>
+      <form onSubmit={submit} className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Bloqueios impedem novos agendamentos no período selecionado (almoço, reunião, feriado etc.).
+        </p>
+
+        {/* Dentista */}
+        {isDentist ? (
+          <div className="flex items-center gap-2 p-2.5 rounded-md border bg-muted/40">
+            <Stethoscope className="size-4 text-muted-foreground shrink-0" />
+            <span className="text-sm">{user!.fullName}</span>
+          </div>
+        ) : loadingDentists ? (
+          <Skeleton className="h-9 w-full" />
+        ) : (
+          <div className="space-y-1.5">
+            <Label>Dentista *</Label>
+            <Select value={dentistId} onValueChange={setDentistId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o dentista…" />
+              </SelectTrigger>
+              <SelectContent>
+                {dentists.map((d: UserRecord) => (
+                  <SelectItem key={d.id} value={d.id}>{d.fullName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <Label>Data *</Label>
+          <Input type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label>Início *</Label>
+            <Input type="time" required value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Fim *</Label>
+            <Input type="time" required value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Motivo *</Label>
+          <Input
+            placeholder="Ex.: Almoço, Reunião, Feriado…"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            maxLength={200}
+            required
+          />
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
+          <Button type="submit" variant="destructive" disabled={m.isPending}>
+            {m.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
+            Bloquear
           </Button>
         </DialogFooter>
       </form>

@@ -326,3 +326,29 @@ export const ROLE_COLOR: Record<UserRole, string> = {
   DENTIST: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
   RECEPTIONIST: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
 };
+
+// ============ Novos tipos — Bloqueio de horários & Horários livres ============
+
+export interface BlockScheduleRequest {
+  dentistId: string;
+  startTime: string;  // ISO datetime
+  endTime: string;    // ISO datetime
+  reason: string;
+}
+
+export interface FreeSlot {
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+}
+
+// ============ Extensão de Appointments com novos endpoints ============
+
+export const AppointmentsExt = {
+  blockSchedule: (data: BlockScheduleRequest) =>
+    api<Appointment>("/appointments/block", { method: "POST", body: data }),
+
+  getFreeSlots: (dentistId: string, date: string) =>
+    api<FreeSlot[]>("/appointments/free-slots", {
+      query: { dentistId, date },
+    }),
+};
