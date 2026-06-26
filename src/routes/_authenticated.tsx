@@ -8,6 +8,7 @@ import {
   MessageCircle, Menu, X,
 } from "lucide-react";
 import { ROLE_LABEL, ROLE_COLOR } from "@/lib/api";
+import type { UserRole } from "@/lib/api";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -34,16 +35,30 @@ function AuthGate() {
   return <AppShell />;
 }
 
+// ─── Permissões por role ──────────────────────────────────────────────────────
+
+/** Itens que cada role NÃO pode ver */
+const HIDDEN_FOR_ROLE: Record<UserRole, string[]> = {
+  ADMIN:        [],
+  DENTIST:      ["/financial", "/admin"],
+  RECEPTIONIST: ["/financial", "/records", "/admin"],
+};
+
+function canSee(role: UserRole, to: string): boolean {
+  return !HIDDEN_FOR_ROLE[role]?.includes(to);
+}
+
 // ─── Nav items ───────────────────────────────────────────────────────────────
 
 const navItems = [
   { to: "/dashboard",    icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/patients",     icon: Users,            label: "Pacientes" },
-  { to: "/appointments", icon: CalendarDays,     label: "Agenda" },
-  { to: "/waiting-room", icon: Clock,            label: "Sala de Espera" },
-  { to: "/recurrence",   icon: MessageCircle,    label: "Retornos" },
-  { to: "/records",      icon: ClipboardList,    label: "Prontuários" },
-  { to: "/procedures",   icon: Wrench,           label: "Procedimentos" },
+  { to: "/patients",     icon: Users,           label: "Pacientes" },
+  { to: "/appointments", icon: CalendarDays,    label: "Agenda" },
+  { to: "/waiting-room", icon: Clock,           label: "Sala de Espera" },
+  { to: "/recurrence",   icon: MessageCircle,   label: "Retornos" },
+  { to: "/records",      icon: ClipboardList,   label: "Prontuários" },
+  { to: "/procedures",   icon: Wrench,          label: "Procedimentos" },
+  { to: "/financial",    icon: Wallet,          label: "Financeiro" },
 ] as const;
 
 // ─── App Shell ───────────────────────────────────────────────────────────────
@@ -51,33 +66,27 @@ const navItems = [
 function AppShell() {
   const { user } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // mobileOpen: drawer lateral no mobile
   const [mobileOpen, setMobileOpen] = useState(false);
   const isActive = (to: string) => pathname === to || pathname.startsWith(to + "/");
 
-  // Fechar drawer ao navegar
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
-  const allNavItems = [
-    ...navItems,
-    ...(user?.role === "ADMIN" ? [
-      { to: "/financial" as const, icon: Wallet, label: "Financeiro" },
-    ] : []),
-  ];
+  const role = user?.role ?? "RECEPTIONIST";
 
-  // Bottom nav mobile — 4 atalhos + "Mais"
+  const visibleNavItems = navItems.filter((item) => canSee(role, item.to));
+
+  // Bottom nav mobile — sempre mostra Início, Agenda, Espera, Pacientes + Mais
   const bottomNav = [
     { to: "/dashboard",    icon: LayoutDashboard, label: "Início" },
-    { to: "/appointments", icon: CalendarDays,     label: "Agenda" },
-    { to: "/waiting-room", icon: Clock,            label: "Espera" },
-    { to: "/patients",     icon: Users,            label: "Pacientes" },
+    { to: "/appointments", icon: CalendarDays,    label: "Agenda" },
+    { to: "/waiting-room", icon: Clock,           label: "Espera" },
+    { to: "/patients",     icon: Users,           label: "Pacientes" },
   ] as const;
 
-  // Conteúdo do nav — reutilizado no sidebar desktop e drawer mobile
   function NavContent({ onLinkClick }: { onLinkClick?: () => void }) {
     return (
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-        {allNavItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <Link
             key={item.to}
             to={item.to}
@@ -109,7 +118,7 @@ function AppShell() {
             <span>Configurações</span>
           </Link>
 
-          {user?.role === "ADMIN" && (
+          {canSee(role, "/admin") && (
             <Link
               to="/admin"
               onClick={onLinkClick}
@@ -133,10 +142,9 @@ function AppShell() {
     <div className="min-h-screen flex bg-background app-shell">
 
       {/* ══════════════════════════════════════════════
-          DESKTOP SIDEBAR — sempre visível, largura fixa
+          DESKTOP SIDEBAR
           ══════════════════════════════════════════════ */}
       <aside className="hidden lg:flex flex-col w-56 xl:w-64 shrink-0 bg-card border-r h-screen sticky top-0">
-        {/* Logo */}
         <div className="h-14 flex items-center gap-2.5 px-4 border-b shrink-0">
           <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shrink-0">
             <Stethoscope className="size-4" />
@@ -149,16 +157,14 @@ function AppShell() {
 
         <NavContent />
 
-        {/* User */}
         <div className="border-t p-2 shrink-0">
           <UserButton />
         </div>
       </aside>
 
       {/* ══════════════════════════════════════════════
-          MOBILE DRAWER — overlay + slide-in
+          MOBILE DRAWER
           ══════════════════════════════════════════════ */}
-      {/* Overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
@@ -166,7 +172,6 @@ function AppShell() {
         />
       )}
 
-      {/* Drawer */}
       <aside
         className={`
           fixed top-0 left-0 h-full z-50 flex flex-col w-72 bg-card border-r
@@ -174,7 +179,6 @@ function AppShell() {
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        {/* Header do drawer */}
         <div className="h-14 flex items-center gap-2.5 px-4 border-b shrink-0">
           <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shrink-0">
             <Stethoscope className="size-4" />
@@ -242,6 +246,8 @@ function UserButton() {
   const navigate = useNavigate();
   if (!user) return null;
 
+  const role = user.role;
+
   const initials = user.fullName
     .split(" ")
     .filter(Boolean)
@@ -280,7 +286,7 @@ function UserButton() {
         <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
           <Settings className="size-4 mr-2" /> Configurações
         </DropdownMenuItem>
-        {user.role === "ADMIN" && (
+        {canSee(role, "/admin") && (
           <DropdownMenuItem onClick={() => navigate({ to: "/admin" })}>
             <ShieldCheck className="size-4 mr-2" /> Administração
           </DropdownMenuItem>
@@ -305,9 +311,8 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
 
   const allNav = [
     ...navItems,
-    { to: "/financial",    label: "Financeiro",    icon: Wallet },
-    { to: "/settings",     label: "Configurações",  icon: Settings },
-    { to: "/admin",        label: "Administração",  icon: ShieldCheck },
+    { to: "/settings",    label: "Configurações",  icon: Settings },
+    { to: "/admin",       label: "Administração",  icon: ShieldCheck },
   ];
 
   const current = allNav.find(
@@ -316,7 +321,6 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
 
   return (
     <header className="h-14 border-b bg-card/80 backdrop-blur sticky top-0 z-30 flex items-center gap-3 px-4 shrink-0">
-      {/* Hambúrguer — só mobile */}
       <button
         onClick={onMenuClick}
         className="lg:hidden p-1.5 rounded-md hover:bg-muted transition-colors"

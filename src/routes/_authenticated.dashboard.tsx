@@ -33,89 +33,83 @@ function Dashboard() {
   const hour = new Date().getHours();
   const greet = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   const firstName = user?.fullName.split(" ")[0];
+  const isReceptionist = user?.role === "RECEPTIONIST";
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-5 max-w-7xl mx-auto">
       {/* Cabeçalho */}
       <header>
-        <p className="text-sm" style={{ color: "#6b7f96" }}>
+        <p className="text-xs sm:text-sm" style={{ color: "#6b7f96" }}>
           {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
         </p>
-        <h1 className="text-2xl sm:text-3xl font-bold mt-1" style={{ color: "#1a3a4a" }}>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mt-0.5" style={{ color: "#1a3a4a" }}>
           {greet}, {firstName}.
         </h1>
       </header>
 
-      {/* Ações rápidas com gradientes */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Ações rápidas — 2 cols mobile, 4 cols desktop */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         <QuickAction
           to="/patients" search={{ new: "1" }}
           icon={UserPlus} title="Novo paciente"
           gradient="linear-gradient(135deg, #1a3a4a 0%, #0d5c6b 100%)"
-          iconBg="rgba(0,184,169,0.2)"
-          iconColor="#00b8a9"
+          iconBg="rgba(0,184,169,0.2)" iconColor="#00b8a9"
         />
         <QuickAction
           to="/appointments" search={{ new: "1" }}
           icon={CalendarPlus} title="Agendar"
           gradient="linear-gradient(135deg, #00b8a9 0%, #009688 100%)"
-          iconBg="rgba(255,255,255,0.2)"
-          iconColor="#ffffff"
-          light
+          iconBg="rgba(255,255,255,0.2)" iconColor="#ffffff" light
         />
-        <QuickAction
-          to="/records"
-          icon={FilePlus} title="Novo prontuário"
-          gradient="linear-gradient(135deg, #1e4976 0%, #1a3a4a 100%)"
-          iconBg="rgba(0,184,169,0.2)"
-          iconColor="#00b8a9"
-        />
+        {!isReceptionist && (
+          <QuickAction
+            to="/records"
+            icon={FilePlus} title="Novo prontuário"
+            gradient="linear-gradient(135deg, #1e4976 0%, #1a3a4a 100%)"
+            iconBg="rgba(0,184,169,0.2)" iconColor="#00b8a9"
+          />
+        )}
         <QuickAction
           to="/patients"
           icon={Search} title="Buscar paciente"
           gradient="linear-gradient(135deg, #2d7d9a 0%, #1a3a4a 100%)"
-          iconBg="rgba(255,255,255,0.15)"
-          iconColor="#ffffff"
-          light
+          iconBg="rgba(255,255,255,0.15)" iconColor="#ffffff" light
         />
+        {/* Se receptionist, preenche o 4º slot com "Buscar" já ocupa o lugar do prontuário */}
       </section>
 
-      {/* KPIs */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* KPIs — 2 cols mobile, 4 desktop */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         <KpiCard
           label="Pacientes ativos" value={patients.data?.totalElements}
-          icon={Users} loading={patients.isLoading}
-          accent="#00b8a9"
+          icon={Users} loading={patients.isLoading} accent="#00b8a9"
         />
         <KpiCard
           label="Consultas hoje" value={today.length}
-          icon={CalendarDays} loading={appts.isLoading}
-          accent="#2979ff"
+          icon={CalendarDays} loading={appts.isLoading} accent="#2979ff"
         />
         <KpiCard
           label="Concluídas hoje" value={today.filter((a) => a.status === "CONCLUIDO").length}
-          icon={Activity} loading={appts.isLoading}
-          accent="#00c48c"
+          icon={Activity} loading={appts.isLoading} accent="#00c48c"
         />
         <KpiCard
           label="Próximas" value={upcoming.length}
-          icon={Clock} loading={appts.isLoading}
-          accent="#ffb300"
+          icon={Clock} loading={appts.isLoading} accent="#ffb300"
         />
       </section>
 
+      {/* Agenda + Próximas — stack no mobile, grid no desktop */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Agenda do dia */}
-        <div className="lg:col-span-2 rounded-xl border bg-white shadow-sm p-5"
-          style={{ borderColor: "#dde3ec" }}>
+        <div className="lg:col-span-2 rounded-xl border bg-white shadow-sm p-4 sm:p-5" style={{ borderColor: "#dde3ec" }}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="font-semibold text-[#1a3a4a]">Agenda de hoje</h2>
+              <h2 className="font-semibold text-sm sm:text-base text-[#1a3a4a]">Agenda de hoje</h2>
               <p className="text-xs" style={{ color: "#6b7f96" }}>
                 {today.length} consulta{today.length === 1 ? "" : "s"}
               </p>
             </div>
-            <Button asChild variant="ghost" size="sm" className="text-[#00b8a9] hover:text-[#009688]">
+            <Button asChild variant="ghost" size="sm" className="text-[#00b8a9] hover:text-[#009688] text-xs sm:text-sm">
               <Link to="/appointments">Ver tudo <ArrowRight className="size-3.5 ml-1" /></Link>
             </Button>
           </div>
@@ -131,12 +125,12 @@ function Dashboard() {
                 const end   = parseBackendDateTime(a.endTime as any);
                 return (
                   <li key={a.id} className="py-3 flex items-center gap-3">
-                    <div className="text-center shrink-0 w-14">
-                      <p className="text-base font-bold text-[#1a3a4a]">{format(start, "HH:mm")}</p>
+                    <div className="text-center shrink-0 w-12 sm:w-14">
+                      <p className="text-sm sm:text-base font-bold text-[#1a3a4a]">{format(start, "HH:mm")}</p>
                       <p className="text-[10px] uppercase" style={{ color: "#6b7f96" }}>{format(end, "HH:mm")}</p>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate text-[#1a3a4a]">{a.patientName}</p>
+                      <p className="font-medium text-sm truncate text-[#1a3a4a]">{a.patientName}</p>
                       <p className="text-xs truncate" style={{ color: "#6b7f96" }}>
                         {a.reason || "—"} · Dr(a). {a.dentistName.split(" ")[0]}
                       </p>
@@ -149,9 +143,9 @@ function Dashboard() {
           )}
         </div>
 
-        {/* Próximas */}
-        <div className="rounded-xl border bg-white shadow-sm p-5" style={{ borderColor: "#dde3ec" }}>
-          <h2 className="font-semibold text-[#1a3a4a] mb-4">Próximas consultas</h2>
+        {/* Próximas consultas */}
+        <div className="rounded-xl border bg-white shadow-sm p-4 sm:p-5" style={{ borderColor: "#dde3ec" }}>
+          <h2 className="font-semibold text-sm sm:text-base text-[#1a3a4a] mb-4">Próximas consultas</h2>
           {appts.isLoading ? (
             <div className="space-y-2">{[0,1,2].map((i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : upcoming.length === 0 ? (
@@ -191,14 +185,14 @@ function QuickAction({
   return (
     <Link
       to={to} search={search}
-      className="quick-action-card group flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl text-white"
+      className="quick-action-card group flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl text-white active:scale-95 transition-transform"
       style={{ background: gradient, boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}
     >
-      <div className="size-10 rounded-lg grid place-items-center shrink-0 transition-transform group-hover:scale-110"
+      <div className="size-9 sm:size-10 rounded-lg grid place-items-center shrink-0 transition-transform group-hover:scale-110"
         style={{ background: iconBg }}>
         <Icon className="size-4" style={{ color: iconColor }} />
       </div>
-      <span className={`text-sm font-semibold leading-tight ${light ? "text-white" : "text-white/90"}`}>
+      <span className={`text-xs sm:text-sm font-semibold leading-tight ${light ? "text-white" : "text-white/90"}`}>
         {title}
       </span>
     </Link>
@@ -209,17 +203,17 @@ function KpiCard({ label, value, icon: Icon, loading, accent }: {
   label: string; value?: number; icon: any; loading?: boolean; accent: string;
 }) {
   return (
-    <div className="rounded-xl border bg-white shadow-sm p-4" style={{ borderColor: "#dde3ec" }}>
+    <div className="rounded-xl border bg-white shadow-sm p-3 sm:p-4" style={{ borderColor: "#dde3ec" }}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#6b7f96" }}>
+        <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider leading-tight" style={{ color: "#6b7f96" }}>
           {label}
         </span>
-        <div className="size-8 rounded-lg grid place-items-center"
+        <div className="size-7 sm:size-8 rounded-lg grid place-items-center shrink-0"
           style={{ background: accent + "18" }}>
-          <Icon className="size-4" style={{ color: accent }} />
+          <Icon className="size-3.5 sm:size-4" style={{ color: accent }} />
         </div>
       </div>
-      <p className="text-3xl font-bold tabular-nums" style={{ color: "#1a3a4a" }}>
+      <p className="text-2xl sm:text-3xl font-bold tabular-nums" style={{ color: "#1a3a4a" }}>
         {loading ? <Skeleton className="h-8 w-12 inline-block" /> : (value ?? 0)}
       </p>
     </div>
@@ -228,17 +222,17 @@ function KpiCard({ label, value, icon: Icon, loading, accent }: {
 
 export function StatusBadge({ status }: { status: AppointmentStatus }) {
   const map: Record<AppointmentStatus, { bg: string; color: string }> = {
-    AGENDADO:       { bg: "#eef2f7",             color: "#2d4a5e" },
+    AGENDADO:       { bg: "#eef2f7",              color: "#2d4a5e" },
     CONFIRMADO:     { bg: "rgba(0,184,169,0.15)", color: "#009688" },
     AGUARDANDO:     { bg: "rgba(103,58,183,0.12)", color: "#7c3aed" },
     EM_ATENDIMENTO: { bg: "rgba(41,121,255,0.12)", color: "#2979ff" },
     CONCLUIDO:      { bg: "rgba(0,196,140,0.15)", color: "#00b87a" },
-    CANCELADO:      { bg: "#f5f5f5",             color: "#9e9e9e" },
+    CANCELADO:      { bg: "#f5f5f5",              color: "#9e9e9e" },
     NAO_COMPARECEU: { bg: "rgba(229,57,53,0.12)", color: "#e53935" },
   };
   const s = map[status];
   return (
-    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
+    <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap"
       style={{ background: s.bg, color: s.color }}>
       {STATUS_LABEL[status]}
     </span>

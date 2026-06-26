@@ -1,11 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Wallet, TrendingUp, TrendingDown, Clock, Construction } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/financial")({
   ssr: false,
-  component: FinancialPage,
+  component: FinancialGuard,
 });
+
+function FinancialGuard() {
+  const { user, ready } = useAuth();
+  if (!ready) return null;
+  if (user?.role !== "ADMIN") return <Navigate to="/dashboard" replace />;
+  return <FinancialPage />;
+}
 
 function FinancialPage() {
   return (

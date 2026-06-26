@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Patients, Records, Exams, Appointments, Procedures,
@@ -43,6 +44,8 @@ function PatientDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
+  const { user } = useAuth();
+  const isReceptionist = user?.role === "RECEPTIONIST";
   const { data: p, isLoading } = useQuery({
     queryKey: ["patient", id],
     queryFn: () => Patients.get(id),
@@ -96,38 +99,50 @@ function PatientDetail() {
         </div>
       </Card>
 
-      <Tabs defaultValue="records">
+      <Tabs defaultValue={isReceptionist ? "appointments" : "records"}>
         <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="records" className="flex-1 sm:flex-none">
-            <FileText className="size-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Prontuários</span>
-          </TabsTrigger>
+          {!isReceptionist && (
+            <TabsTrigger value="records" className="flex-1 sm:flex-none">
+              <FileText className="size-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Prontuários</span>
+            </TabsTrigger>
+          )}
           <TabsTrigger value="appointments" className="flex-1 sm:flex-none">
             <CalendarDays className="size-4 sm:mr-1.5" />
             <span className="hidden sm:inline">Consultas</span>
           </TabsTrigger>
-          <TabsTrigger value="odontogram" className="flex-1 sm:flex-none">
-            <Smile className="size-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Odontograma</span>
-          </TabsTrigger>
-          <TabsTrigger value="exams" className="flex-1 sm:flex-none">
-            <FlaskConical className="size-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Exames</span>
-          </TabsTrigger>
+          {!isReceptionist && (
+            <TabsTrigger value="odontogram" className="flex-1 sm:flex-none">
+              <Smile className="size-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Odontograma</span>
+            </TabsTrigger>
+          )}
+          {!isReceptionist && (
+            <TabsTrigger value="exams" className="flex-1 sm:flex-none">
+              <FlaskConical className="size-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Exames</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
-        <TabsContent value="records" className="mt-4">
-          <RecordsTab patientId={p.id} />
-        </TabsContent>
+        {!isReceptionist && (
+          <TabsContent value="records" className="mt-4">
+            <RecordsTab patientId={p.id} />
+          </TabsContent>
+        )}
         <TabsContent value="appointments" className="mt-4">
           <PatientAppointmentsTab patientId={p.id} />
         </TabsContent>
-        <TabsContent value="odontogram" className="mt-4">
-          <Odontogram patientId={p.id} />
-        </TabsContent>
-        <TabsContent value="exams" className="mt-4">
-          <ExamsTab patientId={p.id} />
-        </TabsContent>
+        {!isReceptionist && (
+          <TabsContent value="odontogram" className="mt-4">
+            <Odontogram patientId={p.id} />
+          </TabsContent>
+        )}
+        {!isReceptionist && (
+          <TabsContent value="exams" className="mt-4">
+            <ExamsTab patientId={p.id} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

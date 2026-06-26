@@ -1,13 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "./_authenticated.dashboard";
 import { ClipboardList, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/records")({
   ssr: false,
-  component: RecordsHub,
+  component: RecordsGuard,
 });
+
+function RecordsGuard() {
+  const { user, ready } = useAuth();
+  if (!ready) return null;
+  if (user?.role === "RECEPTIONIST") return <Navigate to="/dashboard" replace />;
+  return <RecordsHub />;
+}
 
 function RecordsHub() {
   return (

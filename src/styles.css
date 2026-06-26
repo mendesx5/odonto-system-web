@@ -275,3 +275,35 @@
     z-index: 100;
   }
 }
+
+/* ── Mobile UX melhorias ── */
+@layer utilities {
+  /* Touch targets mínimos de 44px em mobile */
+  @media (max-width: 1024px) {
+    button, a, [role="button"] {
+      min-height: 44px;
+    }
+    /* Exceto badges e elementos inline */
+    span[class*="rounded-full"], .badge { min-height: unset; }
+  }
+
+  /* Scroll suave em listas mobile */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+
+  /* Tap highlight sutil */
+  a, button {
+    -webkit-tap-highlight-color: rgba(0,184,169,0.08);
+  }
+}
+
+/* ── Melhorias de acessibilidade ── */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
