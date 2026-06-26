@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +53,8 @@ function PatientDetail() {
     queryFn: () => Patients.get(id),
   });
 
+  const isMobile = useIsMobile();
+
   if (isLoading || !p) {
     return (
       <div className="max-w-5xl mx-auto">
@@ -84,18 +88,31 @@ function PatientDetail() {
               <p className="mt-4 p-3 rounded-md bg-muted/40 text-sm">{p.notes}</p>
             )}
           </div>
-          <Dialog open={editing} onOpenChange={setEditing}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
+          {isMobile ? (
+            <Sheet open={editing} onOpenChange={setEditing}>
+              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
                 <Edit2 className="size-3.5 mr-1.5" /> Editar
               </Button>
-            </DialogTrigger>
-            <PatientFormDialog
-              patientId={p.id}
-              initial={p}
-              onClose={() => setEditing(false)}
-            />
-          </Dialog>
+              <PatientFormDialog
+                patientId={p.id}
+                initial={p}
+                onClose={() => setEditing(false)}
+              />
+            </Sheet>
+          ) : (
+            <Dialog open={editing} onOpenChange={setEditing}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Edit2 className="size-3.5 mr-1.5" /> Editar
+                </Button>
+              </DialogTrigger>
+              <PatientFormDialog
+                patientId={p.id}
+                initial={p}
+                onClose={() => setEditing(false)}
+              />
+            </Dialog>
+          )}
         </div>
       </Card>
 

@@ -26,8 +26,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Plus,
   Search,
@@ -87,20 +95,20 @@ function PatientsPage() {
             {data?.totalElements ?? 0} {data?.totalElements === 1 ? "paciente cadastrado" : "pacientes cadastrados"}
           </p>
         </div>
-        <Dialog
+        <PatientFormWrapper
           open={openCreate}
           onOpenChange={(open) => {
             setOpenCreate(open);
             if (!open) navigate({ to: "/patients", search: {} });
           }}
-        >
-          <DialogTrigger asChild>
+          trigger={
             <Button>
               <Plus className="size-4 mr-1.5" /> Novo paciente
             </Button>
-          </DialogTrigger>
+          }
+        >
           <PatientFormDialog onClose={() => setOpenCreate(false)} />
-        </Dialog>
+        </PatientFormWrapper>
       </header>
 
       <Card className="p-3">
@@ -364,6 +372,36 @@ function InfoField({ label, value }: { label: string; value: string }) {
 }
 
 /* ─── Formulário de paciente (criar / editar) ─── */
+/** Abre Dialog no desktop e Sheet (bottom drawer) no mobile */
+function PatientFormWrapper({
+  open,
+  onOpenChange,
+  trigger,
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  trigger: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <span onClick={() => onOpenChange(true)}>{trigger}</span>
+        {children}
+      </Sheet>
+    );
+  }
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {children}
+    </Dialog>
+  );
+}
+
 export function PatientFormDialog({
   initial,
   patientId,
@@ -378,6 +416,7 @@ export function PatientFormDialog({
   inline?: boolean;
 }) {
   const qc = useQueryClient();
+  const isMobile = useIsMobile();
   const [form, setForm] = useState<PatientRequest>({
     fullName: initial?.fullName ?? "",
     cpf: initial?.cpf ?? "",
@@ -400,12 +439,14 @@ export function PatientFormDialog({
       const msg =
         e instanceof ApiError
           ? e.status === 409
-            ? "CPF ja cadastrado."
+            ? "CPF já cadastrado."
             : e.body?.message ?? e.message
           : "Erro ao salvar.";
       toast.error(msg);
     },
   });
+
+  const title = patientId ? "Editar paciente" : "Novo paciente";
 
   const formContent = (
     <form
@@ -413,66 +454,131 @@ export function PatientFormDialog({
         e.preventDefault();
         mutation.mutate({ ...form, cpf: onlyDigits(form.cpf) });
       }}
-      className="space-y-4"
+      className="flex flex-col gap-4 flex-1"
     >
-      <Field label="Nome completo *">
-        <Input
-          required
-          minLength={3}
-          maxLength={150}
-          value={form.fullName}
-          onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-        />
-      </Field>
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="CPF *">
-          <Input required value={form.cpf}
-            onChange={(e) => setForm({ ...form, cpf: e.target.value })}
-            placeholder="000.000.000-00" disabled={!!patientId} />
-        </Field>
-        <Field label="Data de nascimento *">
+      {/* Seção: Identificação */}
+      <div className="space-y-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Identificação
+        </p>
+        <Field label="Nome completo *">
           <Input
             required
-            type="date"
-            max={new Date().toISOString().slice(0, 10)}
-            value={form.dateOfBirth}
-            onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+            minLength={3}
+            maxLength={150}
+            autoComplete="name"
+            autoFocus={!isMobile}
+            value={form.fullName}
+            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
           />
         </Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label="CPF *">
+            <Input
+              required
+              inputMode="numeric"
+              value={form.cpf}
+              onChange={(e) => setForm({ ...form, cpf: e.target.value })}
+              placeholder="000.000.000-00"
+              disabled={!!patientId}
+            />
+          </Field>
+          <Field label="Data de nascimento *">
+            <Input
+              required
+              type="date"
+              max={new Date().toISOString().slice(0, 10)}
+              value={form.dateOfBirth}
+              onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+            />
+          </Field>
+        </div>
       </div>
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Telefone">
+
+      {/* Seção: Contato */}
+      <div className="space-y-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Contato
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label="Telefone">
+            <Input
+              inputMode="tel"
+              autoComplete="tel"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              placeholder="(11) 91234-5678"
+            />
+          </Field>
+          <Field label="E-mail">
+            <Input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+          </Field>
+        </div>
+        <Field label="Endereço">
           <Input
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="(11) 91234-5678"
+            autoComplete="street-address"
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
           />
         </Field>
-        <Field label="E-mail">
-          <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        </Field>
       </div>
-      <Field label="Endereço">
-        <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-      </Field>
-      <Field label="Observações">
-        <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-      </Field>
-      <DialogFooter>
-        <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-        <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}Salvar
+
+      {/* Seção: Extras */}
+      <div className="space-y-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Observações
+        </p>
+        <Textarea
+          rows={3}
+          placeholder="Alergias, observações clínicas, etc."
+          value={form.notes}
+          onChange={(e) => setForm({ ...form, notes: e.target.value })}
+        />
+      </div>
+
+      {/* Botões — fixos no bottom no mobile via Sheet, normais no Dialog */}
+      <div className={`flex gap-2 pt-1 ${isMobile ? "sticky bottom-0 bg-background pb-2" : ""}`}>
+        <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
+          Cancelar
         </Button>
-      </DialogFooter>
+        <Button type="submit" disabled={mutation.isPending} className="flex-1">
+          {mutation.isPending && <Loader2 className="size-4 mr-1.5 animate-spin" />}
+          {patientId ? "Atualizar" : "Cadastrar"}
+        </Button>
+      </div>
     </form>
   );
 
   if (inline) return formContent;
 
+  // Mobile: Sheet deslizando de baixo para cima
+  if (isMobile) {
+    return (
+      <SheetContent side="bottom" className="h-[92dvh] flex flex-col rounded-t-2xl px-4 pt-4 pb-0">
+        {/* Handle visual */}
+        <div className="mx-auto w-10 h-1 rounded-full bg-muted mb-4 shrink-0" />
+        <SheetHeader className="text-left mb-4 shrink-0">
+          <SheetTitle>{title}</SheetTitle>
+          <SheetDescription>Campos com * são obrigatórios.</SheetDescription>
+        </SheetHeader>
+        <div className="flex-1 overflow-y-auto overscroll-contain -mx-4 px-4 pb-6">
+          {formContent}
+        </div>
+      </SheetContent>
+    );
+  }
+
+  // Desktop: Dialog centralizado
   return (
-    <DialogContent className="sm:max-w-lg">
+    <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>{patientId ? "Editar paciente" : "Novo paciente"}</DialogTitle>
+        <DialogTitle>{title}</DialogTitle>
         <DialogDescription>Campos com * são obrigatórios.</DialogDescription>
       </DialogHeader>
       {formContent}
@@ -483,7 +589,7 @@ export function PatientFormDialog({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium">{label}</Label>
+      <Label className="text-xs font-medium text-foreground/80">{label}</Label>
       {children}
     </div>
   );
