@@ -43,9 +43,9 @@ function loadPrefs(): Prefs {
 function defaultPrefs(): Prefs {
   return {
     theme: "system",
-    notifyNewAppointment: true,
-    notifyStatusChange: true,
-    notifyCancellation: true,
+    notifyNewAppointment: false,
+    notifyStatusChange: false,
+    notifyCancellation: false,
     compactMode: false,
   };
 }
@@ -167,6 +167,7 @@ function SettingsPage() {
       </SectionCard>
 
       {/* ── 4. Notificações ── */}
+      {/*
       <SectionCard
         icon={<Bell className="size-4" />}
         iconBg="bg-blue-100 text-blue-700"
@@ -194,6 +195,7 @@ function SettingsPage() {
           onChange={(v) => updatePref("notifyCancellation", v)}
         />
       </SectionCard>
+      */}
 
       {/* ── 5. Administração (só ADMIN) ── */}
       {user.role === "ADMIN" && (

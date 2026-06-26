@@ -23,8 +23,8 @@ function FinancialPage() {
           <div className="space-y-2">
             <h2 className="font-semibold">Módulo em desenvolvimento</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              A integração financeira (Asaas + PIX) faz parte da v1.5 do roadmap. Os KPIs abaixo são placeholders
-              estruturais — começarão a exibir dados reais assim que o backend expor
+              A integração financeira faz parte da v2.1. Os KPIs abaixo são placeholders
+              estruturais — começarão a exibir dados reais assim que o sistema estiver pronto.
               <code className="mx-1 bg-muted px-1.5 py-0.5 rounded text-xs">/financial/*</code>.
             </p>
           </div>
