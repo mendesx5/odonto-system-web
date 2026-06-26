@@ -2,8 +2,7 @@
 // Context-path do backend: /api/v1
 
 export const API_BASE =
-  (typeof window !== "undefined" && (import.meta as any).env?.VITE_API_URL) ||
-  "http://localhost:8080";
+  import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export const API_URL = `${API_BASE}/api/v1`;
 
