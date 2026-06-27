@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { ApiError, API_BASE } from "@/lib/api";
 import { toast } from "sonner";
 import { Stethoscope, Loader2, Eye, EyeOff, ShieldCheck, Sparkles, Lock } from "lucide-react";
+import { DenticoLogo } from "@/components/dentico-logo";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -112,17 +113,13 @@ function AuthPage() {
         {/* Conteúdo estático — sem transform de parallax */}
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <div className="flex items-center gap-3">
-            <div className="size-11 rounded-xl grid place-items-center"
-              style={{ background: "rgba(0,184,169,0.25)", border: "1px solid rgba(0,184,169,0.4)" }}>
-              <Stethoscope className="size-5 text-[#00b8a9]" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">OdontoSystem</span>
+            <DenticoLogo variant="dark" iconSize={36} />
           </div>
 
           <div className="space-y-7 max-w-md">
             <div>
               <p className="text-xs font-semibold tracking-[0.2em] uppercase text-[#00b8a9] mb-3">
-                Gestão Clínica
+                Clinical Management
               </p>
               <h1 className="text-4xl font-bold leading-tight text-white">
                 A gestão da sua clínica,{" "}
@@ -140,7 +137,7 @@ function AuthPage() {
           </div>
 
           <p className="text-xs text-white/40">
-            © {new Date().getFullYear()} OdontoSystem · API pública e documentada
+            © {new Date().getFullYear()} Dentico · Clinical Management
           </p>
         </div>
       </aside>
@@ -149,12 +146,8 @@ function AuthPage() {
       <main className="flex items-center justify-center p-6 sm:p-10 bg-white">
         <div className="w-full max-w-md">
           {/* Logo mobile */}
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="size-9 rounded-lg grid place-items-center text-white"
-              style={{ background: "#1a3a4a" }}>
-              <Stethoscope className="size-4" />
-            </div>
-            <span className="text-base font-bold text-[#1a3a4a]">OdontoSystem</span>
+          <div className="lg:hidden mb-8">
+            <DenticoLogo variant="horizontal" iconSize={32} />
           </div>
 
           {/* Toggle */}

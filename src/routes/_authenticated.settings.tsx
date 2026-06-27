@@ -83,7 +83,7 @@ function SettingsPage() {
       <header>
         <h1 className="text-xl sm:text-2xl font-bold">Configurações</h1>
         <p className="text-sm text-muted-foreground">
-          Personalize sua experiência no OdontoSystem.
+          Personalize sua experiência no Dentico.
         </p>
       </header>
 
@@ -217,7 +217,7 @@ function SettingsPage() {
       <SectionCard
         icon={<Info className="size-4" />}
         iconBg="bg-gray-100 text-gray-600"
-        title="Sobre o OdontoSystem"
+        title="Sobre o Dentico"
         description="Informações da versão e links úteis."
       >
         <dl className="grid sm:grid-cols-2 gap-3 text-sm">

@@ -1,4 +1,4 @@
-// Cliente HTTP central — OdontoSystem
+// Cliente HTTP central — Dentico Clinical Management
 // Context-path do backend: /api/v1
 
 export const API_BASE =

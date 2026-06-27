@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Loader2 } from "lucide-react";
+import { DenticoLogo } from "@/components/dentico-logo";
 import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -145,14 +146,8 @@ function AppShell() {
           DESKTOP SIDEBAR
           ══════════════════════════════════════════════ */}
       <aside className="hidden lg:flex flex-col w-56 xl:w-64 shrink-0 bg-card border-r h-screen sticky top-0">
-        <div className="h-14 flex items-center gap-2.5 px-4 border-b shrink-0">
-          <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shrink-0">
-            <Stethoscope className="size-4" />
-          </div>
-          <div>
-            <p className="text-sm font-bold leading-none">OdontoSystem</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Gestão clínica</p>
-          </div>
+        <div className="h-14 flex items-center px-4 border-b shrink-0">
+          <DenticoLogo variant="horizontal" iconSize={32} />
         </div>
 
         <NavContent />
@@ -180,13 +175,8 @@ function AppShell() {
         `}
       >
         <div className="h-14 flex items-center gap-2.5 px-4 border-b shrink-0">
-          <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shrink-0">
-            <Stethoscope className="size-4" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold leading-none">OdontoSystem</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Gestão clínica</p>
-          </div>
+          <DenticoLogo variant="horizontal" iconSize={32} />
+          <div className="flex-1" />
           <button
             className="p-1.5 rounded-md hover:bg-muted transition-colors"
             onClick={() => setMobileOpen(false)}
@@ -330,7 +320,7 @@ function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
       </button>
 
       <h1 className="text-sm font-semibold truncate flex-1">
-        {current?.label ?? "OdontoSystem"}
+        {current?.label ?? "Dentico"}
       </h1>
 
       {user && (
